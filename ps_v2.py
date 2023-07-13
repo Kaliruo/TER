@@ -154,7 +154,7 @@ debut = time.time()
 
 filename = sys.argv[1]
 #le nom du fichier de sortie csv et le meme que le fichier pcap d'entré
-output_file = "csv/"+filename[:len(filename)-7]+'.csv'
+output_file = "csv/"+filename[8:len(filename)-7]+'.csv'
 print(output_file)
 
 
