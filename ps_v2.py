@@ -163,4 +163,4 @@ write_csv(stream_stats, output_file)
 
 
 fin= time.time()
-print("temsp  : ", fin - debut," secondes")
+print("temps  : ", fin - debut," secondes")
