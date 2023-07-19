@@ -154,9 +154,8 @@ debut = time.time()
 
 filename = sys.argv[1]
 #le nom du fichier de sortie csv et le meme que le fichier pcap d'entré
-output_file = "csv/"+filename[8:len(filename)-7]+'.csv'
+output_file = os.path.join("csv", os.path.basename(filename)[:-5] + '.csv')
 print(output_file)
-
 
 stream_stats = analyze_pcap_file(filename)
 write_csv(stream_stats, output_file)
