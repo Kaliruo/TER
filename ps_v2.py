@@ -81,19 +81,18 @@ class StreamStats:
 
      #pour le temps moyen inter-paquets
     def set_inter_packet_time(self):
-        if self.packet_count <= 1:
-            return 0
+        if self.packet_count > 1:
+            return self.duration.total_seconds() / (self.packet_count - 1)
 
-        total_inter_packet_time = 0
-        prev_packet = self.packets[0].sniff_time
-        for packet in self.packets[1:]:
-            current_packet = packet.sniff_time
-            inter_time = (current_packet - prev_packet).total_seconds()
-            total_inter_packet_time += inter_time
-            prev_packet = current_packet
+        #total_inter_packet_time = 0
+        #prev_packet = self.packets[0].sniff_time
+        #for packet in self.packets[1:]:
+            #current_packet = packet.sniff_time
+            #inter_time = (current_packet - prev_packet).total_seconds()
+            #total_inter_packet_time += inter_time
+            #prev_packet = current_packet
 
-        return total_inter_packet_time / (self.packet_count - 1)
-
+        return 0
 # fonction qui va lire le fichier paquet par paquet et les regrouper par flux
 def analyze_pcap_file(filename):
     capture = pyshark.FileCapture(filename)
