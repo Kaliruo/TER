@@ -2,6 +2,7 @@ import pyshark
 import csv
 import sys
 import time 
+import os
 from statistics import pstdev
 
 class StreamStats:
@@ -23,7 +24,7 @@ class StreamStats:
         self.packet_sizes = []
         self.ecart_type =0
     
-    #ajoute un paquet a un flux et met a jour certains paramètres
+    #ajoute un paquet à un flux et met à jour certains paramètres
     def add_packet(self, packet):
         self.packets.append(packet)
         self.packet_count += 1
@@ -77,6 +78,21 @@ class StreamStats:
         if self.packet_count > 0:
             self.ecart_type = pstdev(self.packet_sizes)
         return self.ecart_type
+
+     #pour le temps moyen inter-paquets
+    def set_inter_packet_time(self):
+        if self.packet_count <= 1:
+            return 0
+
+        total_inter_packet_time = 0
+        prev_packet = self.packets[0].sniff_time
+        for packet in self.packets[1:]:
+            current_packet = packet.sniff_time
+            inter_time = (current_packet - prev_packet).total_seconds()
+            total_inter_packet_time += inter_time
+            prev_packet = current_packet
+
+        return total_inter_packet_time / (self.packet_count - 1)
 
 # fonction qui va lire le fichier paquet par paquet et les regrouper par flux
 def analyze_pcap_file(filename):
@@ -132,9 +148,9 @@ def write_csv(stats, output_file):
     with open(output_file, 'w',newline='') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow([ "Port 1","Port 2","Packet Count", " Packets (Up)", " Packets (Down)", "Average Bytes/packet",
-                            "Average bytes up","Average bytes down","Total bytes","Duration (seconds)","écart-type"])
+                            "Average bytes up","Average bytes down","Total bytes","Duration (seconds)","écart-type","inter packet time"])
         for stream_id, stream_stats in stats.items():
-            #pour eviter la division par zero
+            #pour eviter la division par zero(si c'est un flux unidirectionnel)
             if stream_stats.up_packets ==0:
                 average_bytes_up=0
             else :
@@ -146,20 +162,22 @@ def write_csv(stats, output_file):
                 average_bytes_down = int(stream_stats.bytes_down/stream_stats.down_packets)
 
             writer.writerow([ stream_stats.src_port,stream_stats.dst_port, stream_stats.packet_count,
-                             stream_stats.up_packets, stream_stats.down_packets, int(stream_stats.bytes/stream_stats.packet_count),
-                             average_bytes_up, average_bytes_down,stream_stats.bytes, stream_stats.set_duration(), stream_stats.set_ecart_type() ])
+                              stream_stats.up_packets, stream_stats.down_packets, int(stream_stats.bytes/stream_stats.packet_count),
+                              average_bytes_up, average_bytes_down,stream_stats.bytes, stream_stats.set_duration(),
+                              stream_stats.set_ecart_type(), stream_stats.set_inter_packet_time()])
 
 
 debut = time.time()
 
-filename = sys.argv[1]
-#le nom du fichier de sortie csv et le meme que le fichier pcap d'entré
-output_file = os.path.join("csv", os.path.basename(filename)[:-5] + '.csv')
+pathname = sys.argv[1]
+#le nom du fichier de sortie csv est le meme que le fichier pcap d'entré
+
+output_file = os.path.join("csv", os.path.basename(pathname)[:-7] + '.csv')
 print(output_file)
 
-stream_stats = analyze_pcap_file(filename)
-write_csv(stream_stats, output_file)
 
+stream_stats = analyze_pcap_file(pathname)
+write_csv(stream_stats, output_file)
 
 fin= time.time()
 print("temps  : ", fin - debut," secondes")
