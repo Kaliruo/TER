@@ -173,7 +173,6 @@ pathname = sys.argv[1]
 output_file = os.path.join("csv", os.path.basename(pathname)[:-7] + '.csv')
 print(output_file)
 
-
 stream_stats = analyze_pcap_file(pathname)
 write_csv(stream_stats, output_file)
 
