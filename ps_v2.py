@@ -91,7 +91,6 @@ class StreamStats:
             #inter_time = (current_packet - prev_packet).total_seconds()
             #total_inter_packet_time += inter_time
             #prev_packet = current_packet
-
         return 0
 # fonction qui va lire le fichier paquet par paquet et les regrouper par flux
 def analyze_pcap_file(filename):
